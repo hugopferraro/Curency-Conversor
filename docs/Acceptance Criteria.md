@@ -61,7 +61,6 @@ O sistema deve permitir que visitantes e usuários autenticados convertam valore
 - Cookies de sessão devem utilizar as proteções `HttpOnly`, `Secure` em produção e uma política `SameSite` apropriada.
 - Rotas protegidas devem validar a sessão no servidor, independentemente do estado exibido pelo cliente.
 - O sistema deve limitar ou retardar tentativas repetidas de autenticação para reduzir ataques de força bruta.
-- Se a recuperação de senha fizer parte da versão publicada, o usuário deve conseguir solicitar um link temporário e de uso único sem que a tela revele se o e-mail existe.
 
 ## 5. Perfil e sessão do usuário
 
