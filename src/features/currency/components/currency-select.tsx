@@ -39,6 +39,11 @@ export function CurrencySelect({
       value={selected}
       options={availableOptions}
       loading={loading}
+      loadingText="Carregando moedas…"
+      noOptionsText="Nenhuma moeda encontrada"
+      openText="Abrir"
+      closeText="Fechar"
+      clearText="Limpar"
       disabled={disabled}
       disableClearable
       isOptionEqualToValue={(option, selected) => option.code === selected.code}

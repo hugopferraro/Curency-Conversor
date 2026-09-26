@@ -30,10 +30,11 @@ function getApiKey() {
 
 async function request(path: string): Promise<unknown> {
   let response: Response;
+  const apiKey = getApiKey();
 
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
-      headers: { apikey: getApiKey() },
+      headers: { apikey: apiKey },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch (error) {

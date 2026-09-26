@@ -27,6 +27,22 @@ describe("transformações da FreecurrencyAPI", () => {
     });
   });
 
+  it("aplica valores padrão sem perder o código ISO", () => {
+    expect(
+      parseCurrencyResponse({ data: { XTS: { name: "Moeda de teste" } } }),
+    ).toEqual([
+      { code: "XTS", name: "Moeda de teste", symbol: "XTS", decimalDigits: 2 },
+    ]);
+  });
+
+  it.each([
+    { data: { BRL: { name: 123 } } },
+    { data: { BRL: { name: "Real", decimal_digits: 19 } } },
+    { data: null },
+  ])("rejeita catálogo inválido: %j", (payload) => {
+    expect(parseCurrencyResponse(payload)).toBeNull();
+  });
+
   it.each([{ data: { BRL: -1 } }, { data: null }, { invalid: true }])(
     "rejeita payload inválido: %j",
     (payload) => {

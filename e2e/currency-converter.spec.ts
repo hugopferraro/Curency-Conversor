@@ -39,6 +39,11 @@ test("cadastro, conversão, histórico, reutilização, exclusão e logout", asy
   await expect(page).toHaveURL("/");
   await expect(page.getByText(TEST_EMAIL)).toBeVisible();
 
+  await page.goto("/login");
+  await expect(page).toHaveURL("/");
+  await page.goto("/register");
+  await expect(page).toHaveURL("/");
+
   const amount = page.getByLabel("Valor");
   await expect(page.getByLabel("Moeda de origem")).toHaveValue(
     "BRL — Real brasileiro",
@@ -50,6 +55,10 @@ test("cadastro, conversão, histórico, reutilização, exclusão e logout", asy
   await page.getByRole("button", { name: "Converter" }).click();
   await expect(page.getByText("2,00 USD").first()).toBeVisible();
   await expect(page.getByText("Conversão salva no seu histórico.")).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText(TEST_EMAIL)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Histórico" })).toBeVisible();
 
   await page.getByRole("button", { name: "Reutilizar" }).click();
   await expect(amount).toBeFocused();
@@ -74,7 +83,14 @@ test("cadastro, conversão, histórico, reutilização, exclusão e logout", asy
 
   await page.getByRole("banner").getByRole("link", { name: "Entrar" }).click();
   await page.getByLabel("E-mail").fill(TEST_EMAIL);
-  await page.getByLabel("Senha").fill("valid-password-123");
+  await page.getByLabel("Senha", { exact: true }).fill("invalid-password");
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(
+    page.getByText("E-mail ou senha inválidos. Verifique os dados e tente novamente."),
+  ).toBeVisible();
+  await expect(page).toHaveURL("/login");
+
+  await page.getByLabel("Senha", { exact: true }).fill("valid-password-123");
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page).toHaveURL("/");
   await expect(page.getByRole("button", { name: "Sair" })).toBeEnabled();

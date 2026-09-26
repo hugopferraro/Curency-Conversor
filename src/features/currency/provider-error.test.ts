@@ -14,4 +14,22 @@ describe("mensagens de falha do provedor", () => {
     expect(currencyProviderMessages.timeout).toContain("demorou");
     expect(currencyProviderMessages["invalid-response"]).toContain("dados inválidos");
   });
+
+  it("possui mensagem pública para todos os tipos de falha", () => {
+    expect(Object.keys(currencyProviderMessages).sort()).toEqual(
+      [
+        "authentication",
+        "invalid-request",
+        "invalid-response",
+        "quota",
+        "timeout",
+        "unavailable",
+      ].sort(),
+    );
+
+    for (const message of Object.values(currencyProviderMessages)) {
+      expect(message).toMatch(/^[A-ZÁÉÍÓÚ]/);
+      expect(message).not.toMatch(/apikey|stack|401|403|422|429/i);
+    }
+  });
 });

@@ -11,7 +11,12 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Falha inesperada na interface", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Falha inesperada na interface", error);
+      return;
+    }
+
+    console.error("Falha inesperada na interface", error.digest ?? "sem digest");
   }, [error]);
 
   return (

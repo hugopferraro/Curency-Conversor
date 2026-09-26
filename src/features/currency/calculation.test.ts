@@ -29,4 +29,13 @@ describe("calculateConversion", () => {
         .convertedAmount,
     ).toBe("1000000000000000.001");
   });
+
+  it("rejeita taxas nulas ou negativas", () => {
+    expect(() => calculateConversion("10", "0", "1")).toThrow(
+      "As taxas devem ser positivas.",
+    );
+    expect(() => calculateConversion("10", "1", "-1")).toThrow(
+      "As taxas devem ser positivas.",
+    );
+  });
 });

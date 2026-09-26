@@ -22,6 +22,7 @@ describe("normalizeAmountInput", () => {
     "0",
     "-1",
     "1,2.3",
+    "1,2,3",
     "1.",
     "1000000000000001",
     "0.0000000000000000001",
@@ -48,6 +49,17 @@ describe("conversionInputSchema", () => {
         requestId: "00000000-0000-4000-8000-000000000000",
         amount: "1",
         sourceCurrency: "real",
+        targetCurrency: "USD",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("exige um requestId UUID", () => {
+    expect(
+      conversionInputSchema.safeParse({
+        requestId: "repetido",
+        amount: "1",
+        sourceCurrency: "BRL",
         targetCurrency: "USD",
       }).success,
     ).toBe(false);

@@ -15,6 +15,16 @@ export default async function ConverterPage() {
             spacing={1}
             sx={{ alignItems: "center", textAlign: "center" }}
           >
+            <Typography component="h1" variant="h3">
+              Converta moedas com clareza
+            </Typography>
+            <Typography
+              color="text.secondary"
+              sx={{ width: "100%", maxWidth: 620, fontSize: { sm: "1.1rem" } }}
+            >
+              Compare valores usando taxas de fechamento e, ao entrar, mantenha suas
+              conversões organizadas logo abaixo.
+            </Typography>
           </Stack>
           <ConverterWorkspace isAuthenticated={Boolean(user)} />
         </Stack>

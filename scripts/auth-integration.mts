@@ -10,7 +10,7 @@ process.env.BETTER_AUTH_TRUSTED_ORIGINS ??= "http://localhost:3000";
 const TEST_EMAIL = "auth-integration@example.invalid";
 const origin = process.env.BETTER_AUTH_URL;
 
-const [{ auth }, { db }, { rateLimits, users }] = await Promise.all([
+const [{ auth }, { db }, { accounts, rateLimits, users }] = await Promise.all([
   import("@/features/auth/server/auth"),
   import("@/db/client"),
   import("@/db/schema"),
@@ -68,7 +68,7 @@ try {
   }
 
   const [createdUser] = await db
-    .select({ name: users.name })
+    .select({ id: users.id, name: users.name })
     .from(users)
     .where(eq(users.email, TEST_EMAIL));
 
@@ -76,8 +76,31 @@ try {
     throw new Error("O nome técnico fixo não foi aplicado pelo servidor.");
   }
 
-  const cookie = signUpResponse.headers
-    .getSetCookie()
+  const [credentialAccount] = await db
+    .select({ password: accounts.password })
+    .from(accounts)
+    .where(eq(accounts.userId, createdUser.id));
+
+  if (
+    !credentialAccount?.password ||
+    credentialAccount.password === "valid-password-123"
+  ) {
+    throw new Error("A senha não foi armazenada exclusivamente como hash.");
+  }
+
+  const setCookies = signUpResponse.headers.getSetCookie();
+  const sessionCookie = setCookies.find((value) => value.includes("session_token"));
+
+  if (
+    !sessionCookie ||
+    !/HttpOnly/i.test(sessionCookie) ||
+    !/SameSite=Lax/i.test(sessionCookie) ||
+    !/Path=\//i.test(sessionCookie)
+  ) {
+    throw new Error("O cookie de sessão não possui os atributos de segurança esperados.");
+  }
+
+  const cookie = setCookies
     .map((value) => value.split(";", 1)[0])
     .join("; ");
 
@@ -92,16 +115,30 @@ try {
     throw new Error("A sessão não foi recuperada após o cadastro.");
   }
 
-  const blockedResponse = await request("/update-user", {
-    method: "POST",
-    headers: { cookie },
-    body: JSON.stringify({ name: "Changed" }),
-  });
+  for (const blockedPath of [
+    "/update-user",
+    "/change-email",
+    "/change-password",
+    "/set-password",
+    "/delete-user",
+    "/request-password-reset",
+    "/reset-password",
+    "/send-verification-email",
+    "/verify-email",
+    "/link-social",
+    "/unlink-account",
+  ]) {
+    const blockedResponse = await request(blockedPath, {
+      method: "POST",
+      headers: { cookie },
+      body: "{}",
+    });
 
-  if (blockedResponse.status !== 404) {
-    throw new Error(
-      `O endpoint de alteração deveria retornar 404, mas retornou ${blockedResponse.status}.`,
-    );
+    if (blockedResponse.status !== 404) {
+      throw new Error(
+        `${blockedPath} deveria retornar 404, mas retornou ${blockedResponse.status}.`,
+      );
+    }
   }
 
   const signOutResponse = await request("/sign-out", {
@@ -133,6 +170,20 @@ try {
 
   if (!validLoginResponse.ok || validLoginResponse.headers.getSetCookie().length === 0) {
     throw new Error("O login válido não criou uma sessão.");
+  }
+
+  const persistedRateLimits = await db
+    .select({ key: rateLimits.key })
+    .from(rateLimits)
+    .where(
+      inArray(rateLimits.key, [
+        "127.0.0.1|/sign-up/email",
+        "127.0.0.1|/sign-in/email",
+      ]),
+    );
+
+  if (persistedRateLimits.length !== 2) {
+    throw new Error("O rate limit de cadastro e login não foi persistido no banco.");
   }
 
   console.log("Integração de autenticação validada com sucesso.");
