@@ -1,27 +1,24 @@
-import { connection } from "next/server";
+import { Box, Container, Stack, Typography } from "@mui/material";
 
-import { ClientGreeting } from "@/app/client-greeting";
-import { getQueryClient, HydrateClient, trpc } from "@/trpc/server";
+import { ConverterWorkspace } from "@/features/currency/components/converter-workspace";
+import { getCurrentUser } from "@/features/auth/server/session";
 
-export default async function Home() {
-  await connection();
-
-  void getQueryClient().prefetchQuery(
-    trpc.hello.queryOptions({ text: "tRPC" }),
-  );
+export default async function ConverterPage() {
+  const user = await getCurrentUser();
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-zinc-50 px-6 dark:bg-black">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h1 className="text-3xl font-semibold text-zinc-950 dark:text-zinc-50">
-          Currency Conversor
-        </h1>
-        <div className="mt-4 text-zinc-600 dark:text-zinc-400">
-          <HydrateClient>
-            <ClientGreeting />
-          </HydrateClient>
-        </div>
-      </section>
-    </main>
+    <Box component="main" id="main-content" sx={{ py: { xs: 4, sm: 7 } }}>
+      <Container maxWidth="md">
+        <Stack spacing={{ xs: 3, sm: 4 }}>
+          <Stack
+            component="header"
+            spacing={1}
+            sx={{ alignItems: "center", textAlign: "center" }}
+          >
+          </Stack>
+          <ConverterWorkspace isAuthenticated={Boolean(user)} />
+        </Stack>
+      </Container>
+    </Box>
   );
 }

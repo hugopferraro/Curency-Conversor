@@ -1,17 +1,10 @@
-import { z } from "zod";
-
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
+import { createTRPCRouter } from "@/trpc/init";
+import { currencyRouter } from "@/trpc/routers/currency";
+import { historyRouter } from "@/trpc/routers/history";
 
 export const appRouter = createTRPCRouter({
-  hello: baseProcedure
-    .input(
-      z.object({
-        text: z.string(),
-      }),
-    )
-    .query(({ input }) => ({
-      greeting: `Hello, ${input.text}!`,
-    })),
+  currency: currencyRouter,
+  history: historyRouter,
 });
 
 export type AppRouter = typeof appRouter;
